@@ -1,0 +1,60 @@
+
+name: Build Veyrion Plugins
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Show Java Version
+        run: java -version
+
+      - name: Find Maven Projects
+        run: |
+          echo "Project structure:"
+          find . -name pom.xml -not -path "*/target/*"
+
+      - name: Build VeyrionCharacter
+        run: |
+          cd VeyrionCharacter
+          mvn --batch-mode clean install
+
+      - name: Build VeyrionWardrobe
+        run: |
+          cd VeyrionWardrobe
+          mvn --batch-mode clean package
+
+      - name: Collect JAR Files
+        run: |
+          mkdir -p artifacts
+          find . -path "*/target/*.jar" \
+            -not -name "*-sources.jar" \
+            -not -name "*-javadoc.jar" \
+            -exec cp {} artifacts/ \;
+
+      - name: Upload Plugin JARs
+        uses: actions/upload-artifact@v6
+        with:
+          name: Veyrion-Plugins
+          path: artifacts/*.jar
+          if-no-files-found: error
