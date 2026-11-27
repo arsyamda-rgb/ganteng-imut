@@ -1,60 +1,44 @@
-
-name: Build Veyrion Plugins
+name: Build JAR
 
 on:
   push:
     branches: [main, master]
   pull_request:
-    branches: [main, master]
-  workflow_dispatch:
-
-permissions:
-  contents: read
+  workflow_dispatch:   # bisa dijalankan manual dari tab Actions
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Java 21
-        uses: actions/setup-java@v6
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
 
-      - name: Show Java Version
-        run: java -version
-
-      - name: Find Maven Projects
+      # Cari pom.xml paling atas (jadi tetap jalan walau project ada di dalam subfolder)
+      - name: Find project folder
+        id: proj
         run: |
-          echo "Project structure:"
-          find . -name pom.xml -not -path "*/target/*"
+          POM=$(find . -name pom.xml -not -path '*/node_modules/*' | awk '{print gsub("/","/"), $0}' | sort -n | head -1 | cut -d' ' -f2-)
+          if [ -z "$POM" ]; then echo "pom.xml tidak ditemukan"; exit 1; fi
+          DIR=$(dirname "$POM")
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+          echo "Project: $DIR"
 
-      - name: Build VeyrionCharacter
-        run: |
-          cd VeyrionCharacter
-          mvn --batch-mode clean install
+      - name: Build with Maven
+        working-directory: ${{ steps.proj.outputs.dir }}
+        run: mvn -B -ntp clean package
 
-      - name: Build VeyrionWardrobe
-        run: |
-          cd VeyrionWardrobe
-          mvn --batch-mode clean package
-
-      - name: Collect JAR Files
-        run: |
-          mkdir -p artifacts
-          find . -path "*/target/*.jar" \
-            -not -name "*-sources.jar" \
-            -not -name "*-javadoc.jar" \
-            -exec cp {} artifacts/ \;
-
-      - name: Upload Plugin JARs
-        uses: actions/upload-artifact@v6
+      - name: Upload JAR
+        uses: actions/upload-artifact@v4
         with:
-          name: Veyrion-Plugins
-          path: artifacts/*.jar
+          name: VeyrionCharacter-jar
+          path: |
+            ${{ steps.proj.outputs.dir }}/target/*.jar
+            !${{ steps.proj.outputs.dir }}/target/original-*.jar
           if-no-files-found: error
