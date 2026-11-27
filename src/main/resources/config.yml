@@ -1,0 +1,76 @@
+# VeyrionCharacter configuration
+# Use /veyrioncharacter reload to apply changes. Database settings and
+# quests.explore-check-interval-ticks require a server restart.
+
+# Language file to use. Files live in plugins/VeyrionCharacter/lang/<language>.yml.
+# Missing keys fall back to the bundled English text.
+language: en
+
+database:
+  # SQLite file name inside the plugin folder (a plain file name, no directories).
+  file: characters.db
+  # How long (milliseconds) SQLite waits on a locked database before failing.
+  busy-timeout-ms: 5000
+
+# Logs extra diagnostic information to the console.
+debug: false
+
+# Values applied when a character record is first created for a player.
+# Existing characters are never modified by changing these.
+default-character:
+  adventure-exp: 0
+  # Must be one of the ranks below, otherwise the first rank is used.
+  adventure-rank: Novice
+  has-completed-gacha: false
+
+# Adventure Ranks, lowest first. 'exp' is the total Adventure EXP needed.
+# The first rank must need 0 EXP and values must strictly increase.
+# A character's rank is recalculated whenever EXP is added.
+adventure-ranks:
+  - name: Novice
+    exp: 0
+  - name: Apprentice
+    exp: 1000
+  - name: Adventurer
+    exp: 5000
+  - name: Veteran
+    exp: 15000
+  - name: Hero
+    exp: 40000
+
+quests:
+  # Quest definitions live in plugins/VeyrionCharacter/quests/*.yml (one quest per file).
+  # How often (ticks, 20 = 1s) Explore Location objectives are checked. Range 5-200.
+  explore-check-interval-ticks: 20
+  # Whether players may abandon active quests with /quest abandon.
+  allow-abandon: true
+
+# The quest sidebar: the vanilla scoreboard on the right of the screen. It appears when a quest is accepted, follows
+# the progress live, disappears when the quest is completed or abandoned and is back after a relog.
+# Its text is in lang/<language>.yml (scoreboard.*); the place name comes from 'area:' in the quest file.
+quest-scoreboard:
+  enabled: true
+  # AUTO   = draw it, but step aside when the TAB plugin runs its own scoreboard (then show the quest with the
+  #          placeholders %veyrioncharacter_quest_active%, _quest_area, _quest_objective, _quest_progress,
+  #          _quest_current, _quest_amount in a TAB scoreboard).
+  # NATIVE = always draw it. TAB = never draw it (placeholders only).
+  mode: AUTO
+
+# Veyra economy. These settings only control how VeyrionCharacter behaves; balances are NEVER stored here.
+# Every balance is read and changed through the Vault Economy API, so a Vault-compatible economy plugin must be
+# installed. Without Vault or a provider the plugin still runs and the economy features report "unavailable".
+# /veconomy reload applies changes.
+economy:
+  enabled: true
+  currency-name: "Veyra"
+  currency-symbol: "VYR"
+  commands:
+    balance: true     # /veyra
+    pay: true         # /bayar
+    baltop: true      # /topuang
+  # Smallest amount /bayar accepts (above 0, at most 2 decimals).
+  minimum-payment: 1
+  # How long (seconds, 10-3600) the /topuang list is reused before balances are read again.
+  baltop-cache-seconds: 120
+  # Minimum time between two /bayar attempts of one player (0-60000 ms, default 3000). Stops command spam.
+  pay-cooldown-ms: 3000

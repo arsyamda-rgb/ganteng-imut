@@ -1,0 +1,84 @@
+name: VeyrionCharacter
+version: '${project.version}'
+main: com.veyrion.character.core.VeyrionCharacterPlugin
+api-version: '1.21'
+description: Character data foundation for the Veyrion server.
+authors: [Veyrion]
+softdepend: [PlaceholderAPI, Vault, ProtocolLib, TAB]
+
+commands:
+  veyrioncharacter:
+    description: Inspect character data, add EXP, or reload the plugin.
+    usage: "/<command> info [player] | addexp <player> <amount> | reload"
+    aliases: [vcharacter, vchar]
+  quest:
+    description: View and manage your quests.
+    usage: "/<command> [active | abandon [quest_id]]"
+    aliases: [quests]
+  questadmin:
+    description: Quest administration.
+    usage: "/<command> reload | give | reset | complete | list | info | progress"
+    aliases: [qadmin]
+  race:
+    description: View your race, roll for one, or skip the awakening cutscene.
+    usage: "/<command> [info | roll | skip]"
+  raceadmin:
+    description: Race administration.
+    usage: "/<command> set <player> <race> | reset <player> | chances | population [detailed|refresh] | altar set|remove|info|reload|preview [race]"
+    aliases: [radmin]
+
+  vnpc:
+    description: Manage built-in NPCs (Shift + Right Click an NPC to edit it).
+    usage: "/<command> create <id> [name] | edit <id> | tp <id> | remove <id> | list | reload"
+    aliases: [veyrionnpc]
+
+  bayar:
+    description: Pay Veyra (VYR) to another player.
+    usage: "/<command> <player> <amount>"
+  veyra:
+    description: Show your Veyra (VYR) balance.
+    usage: "/<command>"
+  topuang:
+    description: Show the 10 players with the highest balance.
+    usage: "/<command>"
+  veconomy:
+    description: Veyra economy administration (all balance changes go through Vault).
+    usage: "/<command> give|take|set <player> <amount> | pending [list|paid <id>|retry <id> confirm] | reload"
+
+permissions:
+  veyrion.character.info:
+    description: View your own character data.
+    default: true
+  veyrion.character.admin:
+    description: Reload the plugin, add EXP and view other players' character data.
+    default: op
+  veyrion.quest.use:
+    description: Use /quest.
+    default: true
+  veyrion.quest.admin:
+    description: Use /questadmin.
+    default: op
+  veyrion.race.use:
+    description: Use /race and /race roll.
+    default: true
+  veyrion.race.admin:
+    description: Use /raceadmin, including the awakening altar commands.
+    default: op
+  veyrion.awakening.use:
+    description: Use the Rift Awakening altar.
+    default: true
+  veyrion.economy.balance:
+    description: Use /veyra.
+    default: true
+  veyrion.economy.pay:
+    description: Use /bayar.
+    default: true
+  veyrion.economy.baltop:
+    description: Use /topuang.
+    default: true
+  veyrion.economy.admin:
+    description: Use /veconomy (give, take, set, reload).
+    default: op
+  veyrion.npc.admin:
+    description: Use /vnpc, edit NPCs with Shift + Right Click, and see hidden NPCs.
+    default: op

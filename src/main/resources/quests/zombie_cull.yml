@@ -1,0 +1,18 @@
+# Example repeatable quest.
+# Objective types: KILL_MOB (entity, amount), COLLECT_ITEM (material, amount),
+# DELIVER_ITEM (material, amount, npc), EXPLORE_LOCATION (world, x, y, z, radius),
+# TALK_TO_NPC (npc), CUSTOM (key, amount)
+id: zombie_cull
+name: "Zombie Cull"
+description: "The village is overrun. Thin out the zombies."
+type: REPEATABLE
+cooldown: 1d
+rewards:
+  exp: 50
+  vyr: 25
+objectives:
+  kill_zombies:
+    type: KILL_MOB
+    description: "Slay zombies"
+    entity: ZOMBIE
+    amount: 10

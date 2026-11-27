@@ -1,0 +1,55 @@
+# VeyrionCharacter - races
+# Use /veyrioncharacter reload to apply changes. Players keep the race they already have.
+#
+# A race id (the key under 'races') is saved in the database in lower case. Never rename an id that players
+# already use: the old id stays in the database as a "legacy" race. Removing a race from this file is safe;
+# characters keep it, it just can no longer be rolled or shown with a colour.
+
+# Chance of each race when a player rolls. The final chance of a race is:
+#   weight * ((expected + k) / (population + k)) ^ alpha          (then limited by the multiplier range)
+# where population = characters that have the race, expected = ALL registered characters (online or not,
+# with any race, a legacy/disabled race or none yet) x the race's share of the base weights. Races with
+# fewer players than expected get a higher chance. See /raceadmin population for the live numbers.
+# All chances are normalised to add up to 100%.
+dynamic-chance:
+  # false = always use the plain weights below.
+  enabled: true
+  # Smoothing k, must be above 0. Higher = reacts more slowly while the server has few players.
+  smoothing-k: 5
+  # Strength of the adjustment, 0 or more. 0 = no adjustment, 1 = normal, 2 = strong.
+  alpha: 1.0
+  # The adjustment of one race is kept inside this range (0 < min <= max).
+  min-multiplier: 0.5
+  max-multiplier: 2.0
+  # Every enabled race always keeps at least this chance, in percent (0-100).
+  # If this is too high for the number of enabled races, all chances become equal.
+  min-chance-percent: 5
+
+races:
+  human:
+    display-name: "Human"
+    # #RRGGBB or a colour name such as gold, green, red, aqua.
+    color: "#F2C96B"
+    description: "Adaptable and ambitious, humans thrive anywhere."
+    # Base weight, must be above 0. Only the proportions matter. (Example values, change freely.)
+    weight: 35
+    # Only enabled races can be rolled. Disabled races can still be given by an admin.
+    enabled: true
+  elf:
+    display-name: "Elf"
+    color: "#7CFC8A"
+    description: "Graceful and long-lived, attuned to nature and magic."
+    weight: 30
+    enabled: true
+  beast:
+    display-name: "Beast"
+    color: "#D98A4E"
+    description: "Fierce and instinctive, with the strength of the wild."
+    weight: 25
+    enabled: true
+  dragon:
+    display-name: "Dragon"
+    color: "#FF5A4D"
+    description: "Rare and mighty, descended from ancient dragons."
+    weight: 10
+    enabled: true

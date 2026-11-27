@@ -1,0 +1,446 @@
+# VeyrionCharacter - THE RIFT AWAKENING (world-based race gacha)
+# Reload with /raceadmin altar reload (or /veyrioncharacter reload). Running rituals keep the settings they started with.
+#
+# Everything here is vanilla: block displays, sounds, titles, boss bars and an inventory menu. No resource pack and
+# no other plugin is needed. The race itself is always chosen by the normal race system (races.yml) BEFORE the
+# cinematic starts; nothing in this file can change which race a player gets.
+#
+# Text uses MiniMessage. Placeholders: <race> (coloured race name), <race_name> (plain), <description>,
+# <player>, <chance> (percent). Sounds are vanilla sound keys, for example block.beacon.activate.
+# Particles are Bukkit particle names (END_ROD, FLAME, ...). DUST also accepts color and size.
+# The altar position is NOT stored here: use /raceadmin altar set (saved in altar.yml).
+
+enabled: true
+
+# true  = /race roll keeps working as before.
+# false = /race roll is refused and players must use the altar.
+allow-command-roll: true
+
+altar:
+  # Minimum time between two altar clicks of the same player (stops click spam).
+  interaction-cooldown-ms: 1500
+  # The player must be within this many blocks of the altar when confirming (checked again before rolling).
+  max-start-distance: 6.0
+  # Ritual centre = middle of the altar block, this many blocks above its top surface.
+  center-offset-y: 1.0
+  # If the player gets farther than this from the centre (teleport etc.) the ritual stops safely.
+  leash-radius: 4.0
+
+# The altar: four stone pillars (one per race) on stone pads, and the Ancient Core floating in the middle. The pillars stay short while nobody is
+# near, all rise together when a player comes within 'radius' blocks, and sink again once everybody has left.
+# During an awakening they react and a floating orb, orbiting rune stones and energy streams play the summoning.
+# All of it is vanilla block displays (no resource pack, no extra plugin) and every player nearby sees it.
+# Purely visual: the race roll is never touched. The pads reach stone-distance + 1.6 blocks from the altar
+# block, so give it a flat area of about 18 x 18 blocks. Nothing is drawn on the floor of the centre (no ring,
+# no corner stones). Entities: 13 per pillar + 1 pad per pillar (56 with four pillars) + the core (4 + shards + runes +
+# 2 x flow-motes per pillar + 1 click box, 23 by default), plus 18 while a ritual runs.
+altar-visual:
+  enabled: true
+  # A player this close (blocks, from the altar centre) raises the pillars.
+  radius: 5.0
+  # A player must be this much farther than 'radius' before they stop counting (stops flicker at the edge).
+  exit-margin: 0.75
+  # Ticks to wait after the last player left before lowering (20 = 1 second). Entering again cancels it.
+  lower-delay-ticks: 20
+  # Distance from the altar centre to each pillar, and the rotation of the ring of pillars (45 = diagonals).
+  stone-distance: 6.5
+  angle-offset-degrees: 45.0
+  # Pillar base height relative to the top of the altar block.
+  base-offset-y: 0.0
+  # Ticks of a full rise / descent. A partial motion (someone leaves mid-rise) takes proportionally less.
+  rise-ticks: 60
+  lower-ticks: 60
+  # Animation keyframes per motion. More = smoother easing but more packets.
+  segments: 10
+  stump-height: 1.1
+  pillar-height: 5.2
+  # Display view range multiplier (1.0 = 64 blocks).
+  view-range: 0.8
+  # Ambient particles while the pillars stand: pulse interval in ticks and particles per pillar (0 = none).
+  ambient-every-ticks: 10
+  ambient-particles: 2
+  # Order around the ring. Every id needs an entry in 'stones'. Visual only, it does not affect any race.
+  order: [human, elf, beast, dragon]
+  stones:
+    # accent = glowing bands on the pillar and the orbiting stones of that race, gem = floating gem and energy
+    # motes, rune = glyph on the pillar (any text).
+    human: {color: "#F2F2F2", accent: QUARTZ_BLOCK, gem: WHITE_CONCRETE, rune: "\u16A0"}
+    elf: {color: "#3DDC6A", accent: EMERALD_BLOCK, gem: EMERALD_BLOCK, rune: "\u16C9"}
+    beast: {color: "#F5C542", accent: GOLD_BLOCK, gem: GOLD_BLOCK, rune: "\u16A6"}
+    dragon: {color: "#E03030", accent: RED_NETHER_BRICKS, gem: REDSTONE_BLOCK, rune: "\u16DF"}
+  # The Ancient Core: a large ancient golden crystal floating above the middle of the altar. It is drawn with
+  # BlockDisplay entities only (translucent amber body, glowing heart, gold tips and orbiting gold shards). It wakes
+  # with the pillars (small, low and quiet while they are down; full size, with orbiting runes and energy flowing in
+  # from each pillar gem while they stand) and gives way to the ritual orb during an awakening. The crystal itself is
+  # the altar: players right-click IT. A transparent Interaction entity (click box only, never drawn) follows the
+  # crystal; the floor is not clickable any more while the crystal exists. Heights are blocks above the top of the
+  # altar block. Cost: no entity is spawned after the first time; while the pillars stand, every 4 ticks one
+  # transformation per core entity is sent (and the click box is moved) and the client interpolates in between.
+  core:
+    enabled: true
+    # 1.0 = a crystal about 1.3 blocks wide and 2.2 tall.
+    size: 1.0
+    hover-height: 2.4
+    dormant-height: 1.4
+    # Small runes (the race runes) circling the crystal: radius in blocks, how many (0 = none), speed multiplier
+    # (0 = hold still).
+    orbit-radius: 1.3
+    runes: 4
+    orbit-speed: 1.0
+    # Energy motes per pillar flowing from the pillar gem into the crystal (0 = no energy streams).
+    flow-motes: 2
+    # Outline of the crystal and the faint dust behind the energy motes (the only particles the core makes).
+    glow: true
+    glow-color: "#FFC94D"
+    trail: true
+    # Blocks the crystal is made of: translucent body, glowing heart inside it, the two small gems turning above
+    # and below it, and the small shards circling it (0 = none).
+    body: YELLOW_STAINED_GLASS
+    inner: GLOWSTONE
+    tip: GOLD_BLOCK
+    shard: GOLD_BLOCK
+    shards: 6
+    # The click box: width and height in blocks at size 1.0 (scaled with 'size'). Make it a little bigger than the
+    # crystal if players find it hard to hit.
+    hitbox-width: 1.8
+    hitbox-height: 3.0
+  # Heard by every player near the altar.
+  sounds:
+    rise-start: {key: block.deepslate_bricks.break, volume: 1.4, pitch: 0.55}
+    motion-step: {key: block.grindstone.use, volume: 0.5, pitch: 0.6}
+    activated: {key: block.beacon.activate, volume: 1.0, pitch: 1.2}
+    lowered: {key: block.deepslate_bricks.place, volume: 1.2, pitch: 0.6}
+
+ritual:
+  # Ticks between animation steps (20 ticks = 1 second). Higher = fewer packets, choppier animation.
+  tick-interval: 2
+  # Phase lengths in ticks.
+  activation-ticks: 60
+  resonance-ticks-per-race: 40
+  accumulation-ticks: 60
+  collapse-ticks: 30
+  reveal-ticks: 120
+  completion-ticks: 20
+
+movement:
+  # Cancel position changes of the ritual player (head rotation stays free).
+  lock: true
+  # Also set walk and fly speed to 0 (smoother than only cancelling moves). Originals are restored afterwards.
+  lock-speed: true
+  # The ritual player takes no damage while the ritual runs.
+  protect-from-damage: true
+
+# The cutscene. Once the race is stored, the player is moved into a scripted camera that flies around the altar in
+# several shots (this is NOT a free cam: the player cannot steer it). It is not shown to anybody else. Game mode,
+# flight and position are restored when it ends - also on disconnect, death, error, /reload or plugin disable, and
+# after a server crash on the next join. Skip with Shift, the clickable chat button or /race skip.
+# The race is decided and saved BEFORE the cutscene starts; nothing here can change it.
+cinematic:
+  enabled: true
+  # No big titles while the cutscene runs; the narration is the small subtitle line.
+  suppress-titles: true
+  skip:
+    # Shift does nothing during the first ticks, so a held Shift cannot skip at once.
+    grace-ticks: 20
+    chat-button: true
+    hint: "<gray>[<white>Shift</white>] Lewati"
+    button: "<gold>[ ⏭ Lewati cutscene ]"
+  # Camera shots, in order. Each shot flies from 'from' to 'to'. Weights share the length of the whole ritual (so
+  # changing the ritual timings keeps the shots in proportion).
+  #   radius = distance from the altar centre, angle = degrees around it (0 = the side where the player stands),
+  #   height = camera height above the ritual centre, look = height of the point it looks at (the crystal is ~1.4).
+  #   ease = LINEAR, SMOOTH, IN (slow start) or OUT (slow end).
+  shots:
+    - {weight: 3.0, ease: SMOOTH, from: {radius: 8.5, angle: -25, height: 3.8, look: 1.5}, to: {radius: 7.5, angle: 10, height: 3.2, look: 1.5}}
+    - {weight: 8.0, ease: LINEAR, from: {radius: 6.0, angle: 10, height: 2.4, look: 1.5}, to: {radius: 5.0, angle: 200, height: 2.8, look: 1.5}}
+    - {weight: 3.0, ease: SMOOTH, from: {radius: 5.0, angle: 200, height: 0.4, look: 2.4}, to: {radius: 3.2, angle: 240, height: 1.2, look: 2.2}}
+    - {weight: 1.5, ease: IN, from: {radius: 2.8, angle: 240, height: 1.6, look: 1.6}, to: {radius: 1.9, angle: 250, height: 1.9, look: 1.5}}
+    - {weight: 6.0, ease: OUT, from: {radius: 2.0, angle: 250, height: 2.0, look: 1.6}, to: {radius: 6.5, angle: 330, height: 3.8, look: 1.5}}
+    - {weight: 1.5, ease: SMOOTH, from: {radius: 6.5, angle: 330, height: 3.8, look: 1.5}, to: {radius: 5.0, angle: 360, height: 2.4, look: 1.5}}
+  # Your own body is invisible during the cutscene (you are the camera). This leaves a copy of you - same skin,
+  # same armor and held items - standing where you were. Needs ProtocolLib; without it no copy is shown.
+  # Other players within viewer-radius blocks of the altar see the copy too (they cannot see you any more).
+  player-double:
+    enabled: true
+    equipment: true
+    viewer-radius: 48
+  # The film subtitle: small, white, centred, on a translucent black bar just above the hotbar, fading in and out.
+  # It is a text display that floats in front of the camera and is visible to the ritual player only.
+  # If it does not appear, make 'distance' negative (-1.0); if it sits too high or low, change 'offset-y'.
+  subtitle:
+    enabled: true
+    fade-in-ticks: 10
+    stay-ticks: 70
+    fade-out-ticks: 10
+    # Wait after the reveal starts before the line appears.
+    delay-ticks: 10
+    # Opacity of the black bar in percent (60-70 is the film look).
+    background-percent: 65
+    distance: 1.0
+    offset-y: -0.5
+    scale: 0.26
+    line-width: 900
+  # The line spoken when the race is revealed (MiniMessage allowed, plain text is fine).
+  dialogue:
+    human: "Kekuatan manusia lahir dari tekad yang tak tergoyahkan."
+    elf: "Bisikan alam telah memilihmu sebagai pewarisnya."
+    beast: "Roh para leluhur Beast telah mengakui keberadaanmu."
+    dragon: "Darah naga kuno telah menemukan pewarisnya."
+  # For a race that has no line above (for example one you add to races.yml).
+  dialogue-default: "Darah leluhurmu telah terbangun."
+
+effects:
+  # radius, height and max-particles-per-step are kept for old configs but are no longer used: the ritual is
+  # drawn with display entities now, not with per-player particles.
+  radius: 2.6
+  height: 3.0
+  # Multiplies the few sparkles of the ritual. 0.5 = half, 2 = double, 0 = none.
+  particle-multiplier: 1.0
+  max-particles-per-step: 160
+  # The orb, the pillars, the sounds and these sparkles are shown to everybody near the altar. Titles and the
+  # boss bar go to the ritual player only.
+
+boss-bar:
+  enabled: true
+  title: "<gradient:#b388ff:#7c4dff>The Rift Awakening</gradient>"
+  # BLUE, GREEN, PINK, PURPLE, RED, WHITE, YELLOW
+  color: PURPLE
+  # PROGRESS, NOTCHED_6, NOTCHED_10, NOTCHED_12, NOTCHED_20
+  overlay: PROGRESS
+
+gui:
+  title: "<dark_purple>The Rift Awakening"
+  begin:
+    material: ENDER_EYE
+    name: "<green><bold>Begin Awakening"
+    lore:
+      - "<gray>Awaken the blood within you."
+      - "<red>This can only be done once."
+  cancel:
+    material: BARRIER
+    name: "<red><bold>Cancel"
+    lore:
+      - "<gray>Step away from the altar."
+  info:
+    material: AMETHYST_SHARD
+    name: "<light_purple>The Altar of the Rift"
+    lore:
+      - "<gray>Your race is chosen by the Rift"
+      - "<gray>and kept forever."
+      - "<gray>Stay near the altar during the ritual."
+
+# Stage visuals. title: MiniMessage title/subtitle with fade-in/stay/fade-out ticks.
+# 'particle', 'accent' and 'burst-particle' entries below are still read but no longer drawn (the altar uses
+# display entities now); titles, sounds, 'reveal.style' and 'lore' are used.
+stages:
+  activation:
+    title:
+      title: "<dark_purple>The Altar Stirs"
+      subtitle: "<gray>Something ancient is waking..."
+      fade-in: 10
+      stay: 40
+      fade-out: 10
+    particle: {type: ENCHANT, count: 2, spread: 0.05, speed: 0.4}
+    sound: {key: block.beacon.activate, volume: 0.8, pitch: 0.7}
+    ambient-sound: {key: block.beacon.ambient, volume: 0.6, pitch: 0.8}
+    ambient-every-ticks: 40
+  resonance:
+    title:
+      title: "<light_purple>Soul Resonance"
+      subtitle: "<gray>Four bloodlines answer the call..."
+      fade-in: 10
+      stay: 30
+      fade-out: 10
+    # Visual only. This list and its order have NO influence on the result.
+    races: [human, elf, beast, dragon]
+  accumulation:
+    title:
+      title: "<aqua>The Rift Opens"
+      subtitle: "<gray>Power gathers..."
+      fade-in: 5
+      stay: 40
+      fade-out: 10
+    particle: {type: END_ROD, count: 1, spread: 0.02, speed: 0.02}
+    accent: {type: PORTAL, count: 2, spread: 0.1, speed: 0.6}
+    # Sound is repeated; pitch rises from pitch to pitch x 2.
+    sound: {key: block.beacon.ambient, volume: 0.7, pitch: 0.6}
+    sound-every-ticks: 10
+  collapse:
+    title:
+      title: "<white><obfuscated>||</obfuscated> <dark_purple>Dimensional Collapse <white><obfuscated>||"
+      subtitle: ""
+      fade-in: 0
+      stay: 15
+      fade-out: 15
+    particle: {type: REVERSE_PORTAL, count: 2, spread: 0.05, speed: 0.3}
+    sound: {key: block.end_portal.spawn, volume: 0.6, pitch: 1.4}
+    burst-particle: {type: FIREWORK, count: 1, spread: 0.0, speed: 0.35}
+    burst-count: 60
+    burst-sound: {key: entity.generic.explode, volume: 0.7, pitch: 0.8}
+
+# Per race. Colours come from races.yml unless 'color' is set here.
+# resonance.shape: sides (3+) and star (true = pentagram style lines). reveal.style: PILLAR, HELIX, SHOCKWAVE, VORTEX.
+# A race without an entry here uses 'default-race'.
+races:
+  human:
+    resonance:
+      shape: {sides: 4, star: false}
+      particle: {type: END_ROD, count: 1, spread: 0.0, speed: 0.0}
+      accent: {type: DUST, count: 1, spread: 0.05, speed: 0.0, size: 1.0}
+      sound: {key: block.note_block.bell, volume: 0.9, pitch: 1.0}
+      title:
+        title: "<color:#F2C96B>Human"
+        subtitle: "<gray>Adaptable. Ambitious."
+        fade-in: 5
+        stay: 25
+        fade-out: 5
+    reveal:
+      style: PILLAR
+      particle: {type: END_ROD, count: 1, spread: 0.03, speed: 0.01}
+      secondary: {type: TOTEM_OF_UNDYING, count: 1, spread: 0.2, speed: 0.3}
+      sound: {key: entity.player.levelup, volume: 1.0, pitch: 0.8}
+      accent-sound: {key: item.totem.use, volume: 0.5, pitch: 1.2}
+      title:
+        title: "<color:#F2C96B><bold><race_name>"
+        subtitle: "<gray><description>"
+        fade-in: 10
+        stay: 80
+        fade-out: 20
+      lore: "<color:#F2C96B>The unbroken will of Humanity has awakened within you."
+  elf:
+    resonance:
+      shape: {sides: 3, star: false}
+      particle: {type: ENCHANT, count: 1, spread: 0.0, speed: 0.0}
+      accent: {type: DUST, count: 1, spread: 0.05, speed: 0.0, size: 1.0}
+      sound: {key: block.amethyst_block.resonate, volume: 0.9, pitch: 1.2}
+      title:
+        title: "<color:#7CFC8A>Elf"
+        subtitle: "<gray>Graceful. Eternal."
+        fade-in: 5
+        stay: 25
+        fade-out: 5
+    reveal:
+      style: HELIX
+      particle: {type: HAPPY_VILLAGER, count: 1, spread: 0.05, speed: 0.0}
+      secondary: {type: ENCHANT, count: 2, spread: 0.1, speed: 0.5}
+      sound: {key: block.amethyst_cluster.break, volume: 1.0, pitch: 1.0}
+      accent-sound: {key: entity.experience_orb.pickup, volume: 0.6, pitch: 1.5}
+      title:
+        title: "<color:#7CFC8A><bold><race_name>"
+        subtitle: "<gray><description>"
+        fade-in: 10
+        stay: 80
+        fade-out: 20
+      lore: "<color:#7CFC8A>The whispering ancient forests have awakened within you."
+  beast:
+    resonance:
+      shape: {sides: 5, star: true}
+      particle: {type: FLAME, count: 1, spread: 0.0, speed: 0.0}
+      accent: {type: DUST, count: 1, spread: 0.05, speed: 0.0, size: 1.2}
+      sound: {key: entity.wolf.growl, volume: 0.9, pitch: 0.9}
+      title:
+        title: "<color:#D98A4E>Beast"
+        subtitle: "<gray>Fierce. Untamed."
+        fade-in: 5
+        stay: 25
+        fade-out: 5
+    reveal:
+      style: SHOCKWAVE
+      particle: {type: FLAME, count: 1, spread: 0.05, speed: 0.02}
+      secondary: {type: CRIT, count: 1, spread: 0.3, speed: 0.4}
+      sound: {key: entity.wolf.howl, volume: 1.0, pitch: 0.8}
+      accent-sound: {key: entity.ravager.roar, volume: 0.6, pitch: 1.0}
+      title:
+        title: "<color:#D98A4E><bold><race_name>"
+        subtitle: "<gray><description>"
+        fade-in: 10
+        stay: 80
+        fade-out: 20
+      lore: "<color:#D98A4E>The wild blood of the Beasts has awakened within you."
+  dragon:
+    resonance:
+      shape: {sides: 6, star: true}
+      particle: {type: SOUL_FIRE_FLAME, count: 1, spread: 0.0, speed: 0.0}
+      accent: {type: DUST, count: 1, spread: 0.05, speed: 0.0, size: 1.4}
+      sound: {key: entity.ender_dragon.growl, volume: 0.5, pitch: 1.1}
+      title:
+        title: "<color:#FF5A4D>Dragon"
+        subtitle: "<gray>Rare. Mighty."
+        fade-in: 5
+        stay: 25
+        fade-out: 5
+    reveal:
+      style: VORTEX
+      particle: {type: FLAME, count: 1, spread: 0.05, speed: 0.02}
+      secondary: {type: DRAGON_BREATH, count: 2, spread: 0.2, speed: 0.03}
+      sound: {key: entity.ender_dragon.growl, volume: 1.0, pitch: 0.7}
+      accent-sound: {key: entity.generic.explode, volume: 0.6, pitch: 0.6}
+      title:
+        title: "<color:#FF5A4D><bold><race_name>"
+        subtitle: "<gray><description>"
+        fade-in: 10
+        stay: 80
+        fade-out: 20
+      lore: "<color:#FF5A4D>The ancient blood of the Dragons has awakened within you."
+
+# Used for any race that has no entry above (for example one you add to races.yml).
+default-race:
+  resonance:
+    shape: {sides: 4, star: false}
+    particle: {type: END_ROD, count: 1, spread: 0.0, speed: 0.0}
+    accent: {type: DUST, count: 1, spread: 0.05, speed: 0.0, size: 1.0}
+    sound: {key: block.amethyst_block.chime, volume: 0.9, pitch: 1.0}
+    title:
+      title: "<race>"
+      subtitle: ""
+      fade-in: 5
+      stay: 25
+      fade-out: 5
+  reveal:
+    style: PILLAR
+    particle: {type: END_ROD, count: 1, spread: 0.03, speed: 0.01}
+    secondary: {type: TOTEM_OF_UNDYING, count: 1, spread: 0.2, speed: 0.3}
+    sound: {key: entity.player.levelup, volume: 1.0, pitch: 0.8}
+    accent-sound: {key: item.totem.use, volume: 0.5, pitch: 1.2}
+    title:
+      title: "<race>"
+      subtitle: "<gray><description>"
+      fade-in: 10
+      stay: 80
+      fade-out: 20
+    lore: "<gray>The blood of the <race> <gray>has awakened within you."
+
+messages:
+  # No prefix is shown before command messages.
+  prefix: ""
+  no-permission: "<red>You do not have permission to do that."
+  disabled: "<red>The Rift Awakening is not available right now."
+  already-completed: "<gray>The altar is silent. Your blood has already awakened."
+  busy: "<yellow>The ritual is already in progress."
+  too-far: "<red>You are too far from the altar."
+  in-vehicle: "<red>Leave your vehicle before the ritual."
+  not-ready: "<red>Your character data is not ready yet. Try again in a moment."
+  no-races: "<red>No races are available right now. Ask an admin."
+  error: "<red>The ritual failed and nothing was changed. Check with an admin."
+  cancelled: "<gray>You step back from the altar."
+  completed: "<green>Your awakening is complete. You are now <race> <gray>(<chance>% chance)"
+  interrupted: "<yellow>Your awakening was interrupted, but the Rift had already chosen: you are <race><yellow>."
+  welcome-back: "<yellow>While you were away the Rift chose your race: <race><yellow>."
+  skip-none: "<gray>There is no cutscene to skip."
+  skipped: "<gray>Cutscene skipped."
+  roll-disabled: "<red>Use the Awakening Altar to awaken your race."
+  admin:
+    usage: "<yellow>Usage: /<label> altar set | remove | info | reload"
+    set: "<green>Awakening altar set at <world> <x> <y> <z>."
+    set-no-block: "<red>Stand on top of a solid block: that block becomes the altar."
+    removed: "<green>Awakening altar removed."
+    none: "<yellow>No altar is configured."
+    info: "<gray>Altar: <white><world> <x> <y> <z> <gray>(rituals running: <white><sessions><gray>)"
+    info-missing-world: "<red>The altar world '<world>' is not loaded."
+    reloaded: "<green>Awakening configuration reloaded."
+    preview-started: "<green>Cutscene preview started with race <race_name>. Nothing is rolled or saved."
+    preview-no-altar: "<red>Set an altar first (/<label> altar set)."
+    preview-busy: "<red>A ritual or preview is already running."
+    preview-unknown-race: "<red>Unknown race '<race_name>'."
+    save-failed: "<red>Could not save the altar. Check the console."
+    players-only: "<red>Only players can use this command."

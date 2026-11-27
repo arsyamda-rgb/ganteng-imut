@@ -1,0 +1,23 @@
+# Example quest. One quest per file; the file name is the default id.
+# type: MAIN | SIDE | REPEATABLE | ONE_TIME   (only REPEATABLE can be taken again, after 'cooldown')
+id: the_lost_relic
+name: "The Lost Relic"
+area: "Ancient Ruins"   # optional: place name on the quest scoreboard (default: the quest name)
+description: "An old scholar spoke of a relic buried beyond the ruins."
+type: MAIN
+cooldown: 0            # e.g. 3600, 30m, 12h, 1d, 1d12h
+requirements:
+  rank: Novice         # minimum Adventure Rank (optional)
+  quests: []           # quest ids that must be completed first (optional)
+rewards:
+  exp: 250             # Adventure EXP
+  vyr: 500             # Veyra, paid through Vault
+objectives:            # objective ids (keys) must stay stable once players have progress
+  find_relic:
+    type: EXPLORE_LOCATION
+    description: "Find the Ancient Relic"
+    world: world
+    x: 100
+    y: 70
+    z: 100
+    radius: 5
